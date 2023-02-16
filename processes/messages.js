@@ -52,13 +52,13 @@ module.exports = async function processMessage(event) {
       request(options, function (error, body) {
         if (error) throw new Error(error);
         console.log(body);
-        var body = JSON.stringify(body);
-        var body = JSON.parse(body);
-        const data = body.data;
-        console.log("DATA", data);
-        console.log("DATA INDEX 0", data[0]);
-        const link = data[0].link;
-        console.log("LINK", link);
+        console.log("TYPE", typeof body);
+
+        var body = `${JSON.stringify(body)}`;
+        body = JSON.parse(body);
+        const data = JSON.parse(body.body);
+        console.log("LINK > ", data.data[0].link);
+        message_id = data.data[0].link;
       });
     } catch (err) {
       console.log(err);
@@ -103,7 +103,7 @@ module.exports = async function processMessage(event) {
         psid: senderID,
         name: clientName,
         profile_pic: clientProUrl,
-        message_id: link,
+        message_id: message_id,
       },
     };
     request.post(backOptions, (err, body) => {
@@ -235,7 +235,7 @@ module.exports = async function processMessage(event) {
             psid: senderID,
             name: clientName,
             profile_pic: clientProUrl,
-            message_id: link,
+            message_id: message_id,
           },
         };
         console.log(`OTP SHIT: ${JSON.stringify(sendOtp)}`);
