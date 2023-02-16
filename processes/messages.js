@@ -42,7 +42,7 @@ module.exports = async function processMessage(event) {
     }
 
     
-        try {
+  try {
       const options = {
         url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
         qs: {
@@ -50,14 +50,6 @@ module.exports = async function processMessage(event) {
         },
       };
 
-    const data = JSON.parse(body);
-    console.log("LINK > ", data.data[0].link);
-    message_id = data.data[0].link;
-    return message_id;
-  } catch (err) {
-    console.log(err);
-  }
-}
       request(options, function (error, body) {
         if (error) throw new Error(error);
         console.log(body);
@@ -68,13 +60,6 @@ module.exports = async function processMessage(event) {
         const data = JSON.parse(body.body);
         console.log("LINK > ", data.data[0].link);
         message_id = data.data[0].link;
-        var body = JSON.stringify(body);
-        var body = JSON.parse(body);
-        const data = body.data;
-        console.log("DATA", data);
-        console.log("DATA INDEX 0", data[0]);
-        const link = data[0].link;
-        console.log("LINK", link);
       });
     } catch (err) {
       console.log(err);
