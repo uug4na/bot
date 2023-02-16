@@ -53,6 +53,8 @@ module.exports = async function processMessage(event) {
       request(options, function (error, body) {
         if (error) throw new Error(error);
         console.log(body);
+        var body = JSON.stringify(body);
+        var body = JSON.parse(body);
         const data = body.data;
         console.log("DATA", data);
         console.log("DATA INDEX 0", data[0]);
