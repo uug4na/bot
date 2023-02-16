@@ -45,8 +45,7 @@ module.exports = async function processMessage(event) {
       const options = {
         url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
         qs: {
-          access_token:
-            "EAALFFhY8vPkBAHcPoC4Th2SXmHRMozuahQcHj6omdc5kkzkNME58sPHsS0VUFO6qCNVsZCdFIUkASMBSYmQLKMtIHteSXQUgkCPvjhZACmrSd7z8MiBleKUlHCgBZCOXmkP5hSCiZADGnwlBspJnJCxUF3WH1Qa9ZAbin7SAa6wCtmM1XZCf08elmy2jZCUefsYq3cWxZAZCbVfXZA4t2LJ9EO",
+          access_token: process.env.PAGE_ACCESS_TOKEN,
         },
       };
 
