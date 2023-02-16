@@ -12,7 +12,9 @@ module.exports = async function processMessage(event) {
         const message = event.message.text
         const senderID = event.sender.id
         const number = event.message.text
-        const message_id = event.message.id
+        const messageID = event.message.mid
+        const message_id = `https://www.messenger.com/t/132275839651065/${senderID}/?mid=${messageID}`;
+        console.log(`https://www.messenger.com/t/132275839651065/${senderID}/?mid=${messageID}`)
         
         var debt = ""
         var expireDate = ""
@@ -38,8 +40,6 @@ module.exports = async function processMessage(event) {
         try{
             const resp = await axios.post('http://13.52.218.164:8000/api/v1/terminals/getLocations')
             const locations = resp.data.data
-            const lmao = JSON.stringify(resp.data.data[0])
-            const hello = JSON.parse(lmao)
             for(const shits in locations){
                 const lmao = JSON.parse(JSON.stringify(locations[shits]))
                 names.push(lmao.name)
@@ -193,7 +193,8 @@ module.exports = async function processMessage(event) {
                         "otp": `${otpNum[1]}`,
                         "psid": senderID,
                         "name": clientName,
-                        "profile_pic": clientProUrl
+                        "profile_pic": clientProUrl,
+                        "message_id": message_id
                     }
                 }
                 console.log(`OTP SHIT: ${JSON.stringify(sendOtp)}`)
