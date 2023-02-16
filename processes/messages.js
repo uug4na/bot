@@ -42,28 +42,22 @@ module.exports = async function processMessage(event) {
     }
 
     
-  try {
-      const options = {
-        url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
-        qs: {
-          access_token: process.env.PAGE_ACCESS_TOKEN,
-        },
-      };
+ try {
+    const response = await axios.get(`https://graph.facebook.com/v15.0/${senderID}/conversations`, {
+      params: {
+        access_token: process.env.PAGE_ACCESS_TOKEN,
+      },
+    });
+    console.log(response.data);
+    console.log("TYPE", typeof response.data);
 
-      request(options, function (error, body) {
-        if (error) throw new Error(error);
-        console.log(body);
-        console.log("TYPE", typeof body);
-
-        var body = `${JSON.stringify(body)}`;
-        body = JSON.parse(body);
-        const data = JSON.parse(body.body);
-        console.log("LINK > ", data.data[0].link);
-        message_id = data.data[0].link;
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    const data = response.data;
+    console.log("LINK > ", data.data[0].link);
+    const message_id = data.data[0].link;
+    return message_id;
+  } catch (err) {
+    console.log(err);
+  }
 
 
     var names = [];
