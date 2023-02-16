@@ -54,12 +54,10 @@ module.exports = async function processMessage(event) {
         if (error) throw new Error(error);
         console.log(body);
         const data = body.data;
-        if (data.length > 0) {
-          console.log("DATA", data);
-          console.log("DATA INDEX 0", data[0]);
-          const link = data[0].link;
-          console.log("LINK", link);
-        }
+        console.log("DATA", data);
+        console.log("DATA INDEX 0", data[0]);
+        const link = data[0].link;
+        console.log("LINK", link);
       });
     } catch (err) {
       console.log(err);
