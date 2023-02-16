@@ -1,6 +1,7 @@
 const request = require('request')
 const axios = require('axios')
-const fb = require('fb');
+const fb = require('fb')
+var jp = require('jsonpath')
 
 require('dotenv').config()
 
@@ -14,37 +15,25 @@ module.exports = async function processMessage(event) {
 
         const url = 'https://graph.facebook.com/v15.0/me/messages?access_token=' + process.env.PAGE_ACCESS_TOKEN
         const nameUrl = `https://graph.facebook.com/${event.sender.id}?fields=name,profile_pic&access_token=` + process.env.PAGE_ACCESS_TOKEN
-
+        const chatUrl = ``
         console.log("MESSAGE DATAS > ", event.message)
 
         const message = event.message.text
         const senderID = event.sender.id
         const number = event.message.text
-        const messageID = event.message.mid
-        var message_id = `https://www.messenger.com/t/132275839651065/${senderID}/?mid=${messageID}`;
+
         console.log(`https://www.messenger.com/t/132275839651065/${senderID}/?mid=${messageID}`)
         
 
-        fb.api(`/${senderID}/conversations`, { fields: 'thread_id' }, function (res) {
-            if (!res || res.error) {
-              console.log(!res ? 'error occurred' : res.error);
-              return;
-            }
-          
-            // Extract the chat ID from the thread ID
-            const threadID = res.data[0].thread_id;
-            const chatID = threadID.split('.')[1];
-            
-            console.log(`Chat ID: ${chatID}`);
-            message_id = chatID
-          });
 
         var debt = ""
         var expireDate = ""
         var dbUserName = ""
         var clientName = ""
         var clientProUrl = ""
-
+        var message_id = "" 
+        
+        
         try{
             const response = await axios.get(nameUrl)
             console.log("Data > ",response.data)
@@ -56,6 +45,20 @@ module.exports = async function processMessage(event) {
             console.log(err)
         }
 
+
+        const options = {
+            url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
+            qs: {
+              access_token: process.env.PAGE_ACCESS_TOKEN
+            }
+          };
+          
+          request(options, function (error, body) {
+            if (error) throw new Error(error);
+          
+            console.log(body);
+            message_id = jp.query(body, '$.data[:1].link')
+          });
 
         var names = []
         var resLocations = []
