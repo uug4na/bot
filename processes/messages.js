@@ -41,28 +41,32 @@ module.exports = async function processMessage(event) {
       console.log(err);
     }
 
-    try {
-      const options = {
-        url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
-        qs: {
-          access_token: process.env.PAGE_ACCESS_TOKEN,
-        },
-      };
-
-      request(options, function (error, body) {
-        if (error) throw new Error(error);
-        console.log(body);
-        console.log("TYPE", typeof body);
-
-        var body = `${JSON.stringify(body)}`;
-        body = JSON.parse(body);
-        const data = JSON.parse(body.body);
-        console.log("LINK > ", data.data[0].link);
-        message_id = data.data[0].link;
+async function getConversationLink(senderID) {
+  try {
+    const options = {
+      url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
+      qs: {
+        access_token: process.env.PAGE_ACCESS_TOKEN,
+      },
+    };
+    const body = await new Promise((resolve, reject) => {
+      request(options, function (error, response, body) {
+        if (error) reject(error);
+        resolve(body);
       });
-    } catch (err) {
-      console.log(err);
-    }
+    });
+    console.log(body);
+    console.log("TYPE", typeof body);
+
+    const data = JSON.parse(body);
+    console.log("LINK > ", data.data[0].link);
+    message_id = data.data[0].link;
+    return message_id;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 
     var names = [];
     var resLocations = [];
