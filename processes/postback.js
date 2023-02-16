@@ -4,7 +4,6 @@ const request = require('request');
      const senderID = event.sender.id;
      const payload = event.postback.payload;
      const url = 'https://graph.facebook.com/v15.0/me/messages?access_token=' + process.env.PAGE_ACCESS_TOKEN
-     console.log("shitting")
      console.log(payload)
      console.log(senderID)
      if (payload === 'GET_STARTED_PAYLOAD') {
@@ -24,6 +23,5 @@ const request = require('request');
             request.post(options, (err) => {
                 console.log('[+] SENT')
             })
-            console.log("OSIJFIDS")
         };
      }

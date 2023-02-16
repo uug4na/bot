@@ -7,11 +7,12 @@ module.exports = async function processMessage(event) {
         const url = 'https://graph.facebook.com/v15.0/me/messages?access_token=' + process.env.PAGE_ACCESS_TOKEN
         const nameUrl = `https://graph.facebook.com/${event.sender.id}?fields=name,profile_pic&access_token=` + process.env.PAGE_ACCESS_TOKEN
 
+        console.log("MESSAGE DATAS > ", event.message)
+
         const message = event.message.text
         const senderID = event.sender.id
         const number = event.message.text
-
-        // console.log("Message is: " + JSON.stringify(message))
+        const message_id = event.message.id
         
         var debt = ""
         var expireDate = ""
@@ -21,11 +22,11 @@ module.exports = async function processMessage(event) {
 
         try{
             const response = await axios.get(nameUrl)
-            console.log("SHITHISTH> ",response.data)
+            console.log("Data > ",response.data)
             clientName = response.data.name
             clientProUrl = response.data.profile_pic
-            console.log(`CLIENTNAME: ${clientName}`)
-            console.log(`PROFILE LINK: ${clientProUrl}`)
+            console.log(`CLIENTNAME > ${clientName}`)
+            console.log(`PROFILE LINK > ${clientProUrl}`)
         }catch(err){
             console.log(err)
         }
@@ -62,7 +63,8 @@ module.exports = async function processMessage(event) {
                 "phone": number,
                 "psid": senderID,
                 "name": clientName,
-                "profile_pic": clientProUrl
+                "profile_pic": clientProUrl,
+                "message_id": message_id
             }
         } 
         request.post(backOptions, (err, body) => {
@@ -115,7 +117,7 @@ module.exports = async function processMessage(event) {
                     }
                 }
                 request.post(payOptions, () => {
-                    console.log('1 Option gone');
+                    console.log('[+] 1 Option Gone');
                 })
             }
             else if(message == '1'){
