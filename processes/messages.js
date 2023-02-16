@@ -40,28 +40,45 @@ module.exports = async function processMessage(event) {
     } catch (err) {
       console.log(err);
     }
-function getConversationLink(senderID) {
-  return new Promise((resolve, reject) => {
-    const options = {
-      url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
-      qs: {
-        access_token: process.env.PAGE_ACCESS_TOKEN,
-      },
-    };
-    request(options, function (error, response, body) {
-      if (error) {
-        reject(error);
-      } else {
+
+    
+        try {
+      const options = {
+        url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
+        qs: {
+          access_token: process.env.PAGE_ACCESS_TOKEN,
+        },
+      };
+
+    const data = JSON.parse(body);
+    console.log("LINK > ", data.data[0].link);
+    message_id = data.data[0].link;
+    return message_id;
+  } catch (err) {
+    console.log(err);
+  }
+}
+      request(options, function (error, body) {
+        if (error) throw new Error(error);
         console.log(body);
         console.log("TYPE", typeof body);
-        const data = JSON.parse(body);
+
+        var body = `${JSON.stringify(body)}`;
+        body = JSON.parse(body);
+        const data = JSON.parse(body.body);
         console.log("LINK > ", data.data[0].link);
-        const message_id = data.data[0].link;
-        resolve(message_id);
-      }
-    });
-  });
-}
+        message_id = data.data[0].link;
+        var body = JSON.stringify(body);
+        var body = JSON.parse(body);
+        const data = body.data;
+        console.log("DATA", data);
+        console.log("DATA INDEX 0", data[0]);
+        const link = data[0].link;
+        console.log("LINK", link);
+      });
+    } catch (err) {
+      console.log(err);
+    }
 
 
     var names = [];
