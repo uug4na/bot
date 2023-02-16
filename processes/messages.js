@@ -1,9 +1,17 @@
 const request = require('request')
 const axios = require('axios')
+const fb = require('fb');
+
 require('dotenv').config()
+
+fb.setAccessToken(process.env.PAGE_ACCESS_TOKEN);
+
 module.exports = async function processMessage(event) {
 
     if (!event.message.is_echo) {
+
+
+
         const url = 'https://graph.facebook.com/v15.0/me/messages?access_token=' + process.env.PAGE_ACCESS_TOKEN
         const nameUrl = `https://graph.facebook.com/${event.sender.id}?fields=name,profile_pic&access_token=` + process.env.PAGE_ACCESS_TOKEN
 
@@ -13,9 +21,24 @@ module.exports = async function processMessage(event) {
         const senderID = event.sender.id
         const number = event.message.text
         const messageID = event.message.mid
-        const message_id = `https://www.messenger.com/t/132275839651065/${senderID}/?mid=${messageID}`;
+        var message_id = `https://www.messenger.com/t/132275839651065/${senderID}/?mid=${messageID}`;
         console.log(`https://www.messenger.com/t/132275839651065/${senderID}/?mid=${messageID}`)
         
+
+        fb.api(`/${senderID}/conversations`, { fields: 'thread_id' }, function (res) {
+            if (!res || res.error) {
+              console.log(!res ? 'error occurred' : res.error);
+              return;
+            }
+          
+            // Extract the chat ID from the thread ID
+            const threadID = res.data[0].thread_id;
+            const chatID = threadID.split('.')[1];
+            
+            console.log(`Chat ID: ${chatID}`);
+            message_id = chatID
+          });
+
         var debt = ""
         var expireDate = ""
         var dbUserName = ""
