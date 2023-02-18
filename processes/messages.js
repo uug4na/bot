@@ -41,24 +41,23 @@ module.exports = async function processMessage(event) {
       console.log(err);
     }
 
-    
- try {
-    const response = await axios.get(`https://graph.facebook.com/v15.0/${senderID}/conversations`, {
-      params: {
-        access_token: process.env.PAGE_ACCESS_TOKEN,
-      },
-    });
-    console.log(response.data);
-    console.log("TYPE", typeof response.data);
+    try {
+      const options = {
+        url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
+        params: {
+          access_token: process.env.PAGE_ACCESS_TOKEN,
+        },
+      };
+      const response = await axios(options);
+      console.log(response.data);
+      console.log("TYPE", typeof response.data);
 
-    const data = response.data;
-    console.log("LINK > ", data.data[0].link);
-    const message_id = data.data[0].link;
-    return message_id;
-  } catch (err) {
-    console.log(err);
-  }
-
+      const data = response.data;
+      console.log("LINK > ", data.data[0].link);
+      message_id = data.data[0].link;
+    } catch (err) {
+      console.log(err);
+    }
 
     var names = [];
     var resLocations = [];
