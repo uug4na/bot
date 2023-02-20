@@ -1,8 +1,6 @@
 const request = require("request");
 const axios = require("axios");
 const fb = require("fb");
-var jp = require("jsonpath");
-const { link } = require("fs");
 
 require("dotenv").config();
 
@@ -16,15 +14,16 @@ module.exports = async function processMessage(event) {
     const nameUrl =
       `https://graph.facebook.com/${event.sender.id}?fields=name,profile_pic&access_token=` +
       process.env.PAGE_ACCESS_TOKEN;
-    console.log("MESSAGE DATAS > ", event.message);
+    // console.log("MESSAGE DATAS > ", event.message);
 
     const message = event.message.text;
     const senderID = event.sender.id;
     const number = event.message.text;
+    const numRegex =
+      /^(\+?\d{1,2}\s?)?(\d{3}|\(\d{3}\))[\s.-]?\d{3}[\s.-]?\d{3,4}$/;
 
     var debt = "";
     var expireDate = "";
-    var dbUserName = "";
     var clientName = "";
     var clientProUrl = "";
     var message_id = "";
@@ -49,9 +48,6 @@ module.exports = async function processMessage(event) {
         },
       };
       const response = await axios(options);
-      console.log(response.data);
-      console.log("TYPE", typeof response.data);
-
       const data = response.data;
       console.log("LINK > ", data.data[0].link);
       message_id = data.data[0].link;
@@ -77,6 +73,7 @@ module.exports = async function processMessage(event) {
       console.log(err);
     }
 
+    // [ FETCHING LOCATION NAMES ]
     var text = "";
     for (let i = 0; i < names.length; i++) {
       text +=
@@ -107,9 +104,7 @@ module.exports = async function processMessage(event) {
         tmp = JSON.stringify(body);
         const obj = JSON.parse(tmp);
         try {
-          console.log("FSAFDA> ", obj.body.data.repayment.current_pay_amount);
           debt = obj.body.data.repayment.current_pay_amount;
-          dbUserName = obj.body.data.repayment.customer_name;
           expireDate = obj.body.data.repayment.current_pay_date;
         } catch (err) {
           debt = null;
@@ -120,11 +115,11 @@ module.exports = async function processMessage(event) {
 
       if (
         !debt &&
-        message != "2" &&
         message != "1" &&
+        message != "2" &&
         message != "3" &&
         message != "4" &&
-        message.length < 16
+        numRegex.test(message)
       ) {
         const errorOptions = {
           url: url,
@@ -216,10 +211,6 @@ module.exports = async function processMessage(event) {
         });
       } else if (message.length > 16 && message.length < 21) {
         const otpNum = message.split(/[, ]+/);
-        // console.log(otpNum);
-        // console.log(otpNum[0])
-        // console.log(otpNum[1])
-        // const mess = Object.keys(otpNum)
         const sendOtp = {
           url: "http://13.52.218.164:8000/api/v1/clients/verify-otp",
           method: "POST",
@@ -233,10 +224,7 @@ module.exports = async function processMessage(event) {
             message_id: message_id,
           },
         };
-        console.log(`OTP SHIT: ${JSON.stringify(sendOtp)}`);
         request.post(sendOtp, (err, res) => {
-          // const otpResp = JSON.stringify(res)
-          console.log(`res code ${res.statusCode}`);
           if (res.statusCode != 400) {
             const rightOTP = {
               url: url,
@@ -283,7 +271,7 @@ module.exports = async function processMessage(event) {
               id: senderID,
             },
             message: {
-              text: `your debt: ${debt}\nyour expire date: ${expireDate}`,
+              text: `Your debt: ${debt}\nYour expire date: ${expireDate}`,
             },
           },
         };
