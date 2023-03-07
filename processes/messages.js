@@ -31,11 +31,11 @@ module.exports = async function processMessage(event) {
 
     try {
       const response = await axios.get(nameUrl);
-      console.log("Data > ", response.data);
+      // console.log("Data > ", response.data);
       clientName = response.data.name;
       clientProUrl = response.data.profile_pic;
-      console.log(`CLIENTNAME > ${clientName}`);
-      console.log(`PROFILE LINK > ${clientProUrl}`);
+      // console.log(`CLIENTNAME > ${clientName}`);
+      // console.log(`PROFILE LINK > ${clientProUrl}`);
     } catch (err) {
       console.log(err);
     }
@@ -49,7 +49,7 @@ module.exports = async function processMessage(event) {
       };
       const response = await axios(options);
       const data = response.data;
-      console.log("LINK > ", data.data[0].link);
+      // console.log("LINK > ", data.data[0].link);
       message_id = data.data[0].link;
     } catch (err) {
       console.log(err);
@@ -73,7 +73,6 @@ module.exports = async function processMessage(event) {
       console.log(err);
     }
 
-    // [ FETCHING LOCATION NAMES ]
     var text = "";
     for (let i = 0; i < names.length; i++) {
       text +=
@@ -100,7 +99,7 @@ module.exports = async function processMessage(event) {
     };
     request.post(backOptions, (err, body) => {
       if (!err) {
-        console.log(JSON.stringify(body));
+        // console.log(JSON.stringify(body));
         tmp = JSON.stringify(body);
         const obj = JSON.parse(tmp);
         try {
@@ -152,7 +151,7 @@ module.exports = async function processMessage(event) {
           },
         };
         request.post(payOptions, () => {
-          console.log("[+] 1 Option Gone");
+          console.log("[+] OPTION 1 SENT");
         });
       } else if (message == "1") {
         const otpOptions = {
@@ -276,7 +275,7 @@ module.exports = async function processMessage(event) {
           },
         };
         request.post(options, () => {
-          console.log("[+] DEBT GONE");
+          console.log("[+] DEBT SENT");
         });
       }
     });
