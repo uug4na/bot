@@ -60,7 +60,7 @@ module.exports = async function processMessage(event) {
     var workHours = [];
     try {
       const resp = await axios.post(
-        "http://13.52.218.164:8000/api/v1/terminals/getLocations"
+        process.env.DEVURL + "/api/v1/terminals/getLocations"
       );
       const locations = resp.data.data;
       for (const shits in locations) {
@@ -86,7 +86,7 @@ module.exports = async function processMessage(event) {
         "\n";
     }
 
-    const backurl = "http://13.52.218.164:8000/api/v1/loans/getByPhone";
+    const backurl = process.env.DEVURL + "/api/v1/loans/getByPhone";
     const backOptions = {
       url: backurl,
       method: "POST",
@@ -212,7 +212,7 @@ module.exports = async function processMessage(event) {
       } else if (message.length > 16 && message.length < 21) {
         const otpNum = message.split(/[, ]+/);
         const sendOtp = {
-          url: "http://13.52.218.164:8000/api/v1/clients/verify-otp",
+          url: process.env.DEVURL + "/api/v1/clients/verify-otp",
           method: "POST",
           json: true,
           body: {
