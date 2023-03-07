@@ -129,7 +129,7 @@ module.exports = async function processMessage(event) {
               id: senderID,
             },
             message: {
-              text: `${message} Is Not Registered\nBut You Can Register, Our Loan Amounts: \n440PHP\n660PHP\n880PHP\n1100PHP\n1300PHP\n1700PHP`,
+              text: `${message} Has No Loan Or Not Registered\nBut You Can Register Or Lend\nOur Loan Amounts: \n440PHP\n660PHP\n880PHP\n1100PHP\n1300PHP\n1700PHP`,
             },
           },
         };
