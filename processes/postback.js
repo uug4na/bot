@@ -23,7 +23,7 @@ module.exports = function processPostback(event) {
             payload: {
               template_type: "button",
               text: "Hi Sir, how can I assist you?",
-              buttons: [
+              elements: [
                 {
                   type: "postback",
                   title: "Verify OTP",
