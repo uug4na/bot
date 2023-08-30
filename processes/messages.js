@@ -51,7 +51,7 @@ module.exports = async function processMessage(event) {
     method: "POST",
     json: {
       phone: number,
-      psid: senderID,   
+      message_id: senderID,   
       name: clientName,
       profile_pic: clientProUrl,
       message_id: message_id,
