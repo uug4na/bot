@@ -27,22 +27,22 @@ module.exports = function processPostback(event) {
                 {
                   type: "postback",
                   title: "Verify OTP",
-                  payload: "VERIFY_OTP_PAYLOAD", // Define a unique payload for this option
+                  payload: "VERIFY_OTP_PAYLOAD", 
                 },
                 {
                   type: "postback",
                   title: "Get Repayment Info",
-                  payload: "REPAYMENT_INFO_PAYLOAD", // Define a unique payload for this option
+                  payload: "REPAYMENT_INFO_PAYLOAD", 
                 },
                 {
                   type: "postback",
                   title: "Locations",
-                  payload: "LOCATIONS_PAYLOAD", // Define a unique payload for this option
+                  payload: "LOCATIONS_PAYLOAD", 
                 },
                 {
                   type: "postback",
                   title: "Menu",
-                  payload: "MENU_PAYLOAD", // Define a unique payload for this option
+                  payload: "MENU_PAYLOAD", 
                 },
               ],
             },
