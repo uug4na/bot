@@ -4,6 +4,8 @@ const fb = require("fb");
 
 module.exports = function processPostback(event) {
   let _locationText;
+
+module.exports = function processPostback(event) {
   const senderID = event.sender.id;
   const payload = event.postback.payload;
   const url =
@@ -123,6 +125,10 @@ module.exports = function processPostback(event) {
 
   function _verifyOtp(){
     const otpOptions = {  
+  console.log(payload);
+  console.log(senderID);
+  if (payload === "GET_STARTED_PAYLOAD") {
+    const options = {
       url: url,
       method: "POST",
       json: true,
@@ -155,5 +161,41 @@ module.exports = function processPostback(event) {
   }
   if (payload === "REPAYMENT_INFO_PAYLOAD"){
     _repayment()
+  }
+          attachment: {
+            type: "template",
+            payload: {
+              template_type: "button",
+              text: "Hi Sir, how can I assist you?",
+              buttons: [
+                {
+                  type: "postback",
+                  title: "Verify OTP",
+                  payload: "VERIFY_OTP_PAYLOAD", 
+                },
+                {
+                  type: "postback",
+                  title: "Get Repayment Info",
+                  payload: "REPAYMENT_INFO_PAYLOAD", 
+                },
+                {
+                  type: "postback",
+                  title: "Locations",
+                  payload: "LOCATIONS_PAYLOAD", 
+                },
+                {
+                  type: "postback",
+                  title: "Menu",
+                  payload: "MENU_PAYLOAD", 
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    request.post(options, (err) => {
+      console.log("[+] SENT");
+    });
   }
 };
