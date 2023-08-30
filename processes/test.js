@@ -4,12 +4,11 @@ const fb = require("fb");
 require("dotenv").config();
 fb.setAccessToken(process.env.PAGE_ACCESS_TOKEN);
 
-module.exports = async function processMessage(event) {
-  if (event.message.is_echo) return;
-
-  const { sender, message } = event;
+module.exports = async function processPostback(event) {
+  const payload = event.postback.payload;
+  const { sender, postback } = event;
   const { id: senderID } = sender;
-  const { text: number } = message;
+  const { payload: message } = postback;
 
   const numRegex =
     /^(\+?\d{1,2}\s?)?(\d{3}|\(\d{3}\))[\s.-]?\d{3}[\s.-]?\d{3,4}$/;
@@ -45,13 +44,40 @@ module.exports = async function processMessage(event) {
     console.log(err);
   }
 
+  let names = [];
+  let resLocations = [];
+  let workHours = [];
+  try {
+    const resp = await axios.post(
+      "http://35.88.61.60/middleware/terminals/getLocations"
+    );
+    const locations = resp.data.data;
+    for (const location of locations) {
+      const { name, location: resLocation, working_hours } = location;
+      names.push(name);
+      resLocations.push(resLocation);
+      workHours.push(working_hours);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+
+  // Locations Text
+  let _locationText = names.reduce((acc, name, index) => {
+    const location = resLocations[index];
+    const hours = workHours[index];
+    return acc + `\n${name}, Locations: ${location}, Work Hours: ${hours}\n`;
+  }, "");
+
+  console.log(_locationText);
+
   const backurl = "http://35.88.61.60/middleware/loans/getByPhone";
   const backOptions = {
     url: backurl,
     method: "POST",
     json: {
       phone: number,
-      psid: senderID,   
+      psid: senderID,
       name: clientName,
       profile_pic: clientProUrl,
       message_id: message_id,
@@ -101,7 +127,7 @@ module.exports = async function processMessage(event) {
         url: url,
         method: "POST",
         json: true,
-        body: { 
+        body: {
           recipient: {
             id: senderID,
           },
@@ -114,7 +140,7 @@ module.exports = async function processMessage(event) {
         console.log("[+] 1 Option Gone");
       });
     } else if (message == "1") {
-      const otpOptions = {  
+      const otpOptions = {
         url: url,
         method: "POST",
         json: true,
@@ -133,6 +159,23 @@ module.exports = async function processMessage(event) {
         } else {
           console.log(err);
         }
+      });
+    } else if (payload == "LOCATIONS_PAYLOAD") {
+      const locOptions = {
+        url: url,
+        method: "POST",
+        json: true,
+        body: {
+          recipient: {
+            id: senderID,
+          },
+          message: {
+            text: `${_locationText}`,
+          },
+        },
+      };
+      request.post(locOptions, (err) => {
+        console.log("[+] LOCATION SENT");
       });
     } else if (message == "4") {
       const menuOptions = {
