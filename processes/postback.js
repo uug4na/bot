@@ -9,9 +9,9 @@ module.exports = function processPostback(event) {
   const url =
     "https://graph.facebook.com/v15.0/me/messages?access_token=" +
     process.env.PAGE_ACCESS_TOKEN;
-  
-  console.log(payload);
-  console.log(senderID);
+    
+    console.log("SENDER ID: ", senderID);
+    console.log("PAYLOAD: ", payload);
 
   function _menuFunc(){
     const messageData = {
