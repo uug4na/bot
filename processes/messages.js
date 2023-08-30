@@ -17,20 +17,11 @@ module.exports = async function processMessage(event) {
   const url = `https://graph.facebook.com/v15.0/me/messages?access_token=${process.env.PAGE_ACCESS_TOKEN}`;
   const nameUrl = `https://graph.facebook.com/${senderID}?fields=name,profile_pic&access_token=${process.env.PAGE_ACCESS_TOKEN}`;
 
-  let debt = 0;
+  let debt = null;
   let expireDate = null;
   let clientName = "";
   let clientProUrl = "";
   let message_id = "";
-  let tmp = "";
-
-  try {
-    const { data } = await axios.get(nameUrl);
-    clientName = data.name;
-    clientProUrl = data.profile_pic;
-  } catch (err) {
-    console.error("Error fetching client data:", err);
-  }
 
   // JUST FETCHING SECTION NO NEED TO UNFOLD
   try { 
@@ -46,7 +37,13 @@ module.exports = async function processMessage(event) {
   } catch (err) {
     console.error("Error fetching conversation data:", err);
   }
-
+  try {
+    const { data } = await axios.get(nameUrl);
+    clientName = data.name;
+    clientProUrl = data.profile_pic;
+  } catch (err) {
+    console.error("Error fetching client data:", err);
+  }
 
   function _loanCheck(phoneNum){
     const backurl = "http://35.88.61.60/middleware/loans/getByPhone";
@@ -75,7 +72,7 @@ module.exports = async function processMessage(event) {
       try {
         debt = obj.body.data.repayment.current_pay_amount;
         expireDate = obj.body.data.repayment.current_pay_date;
-        console.log("FETCHING USER LOAN FROM DB")
+        console.log("FETCHING USER LOAN FROM DB", debt, expireDate)
       } catch (err) {
         debt = null;
       }
@@ -83,7 +80,10 @@ module.exports = async function processMessage(event) {
   }
   if(message){
     console.log("[!] GOT MESSAGE > ", message)
-    if (debt == null && numRegex.test(message) && message.length < 13 && message.length >= 10 ) {
+    if (numRegex.test(message) && message.length < 13 && message.length >= 10 ) {
+      if(_loanCheck(message)){
+        console.log("USER HAS LOAN")
+      }
       const errorOptions = {
         url: url,
         method: "POST",
@@ -100,8 +100,9 @@ module.exports = async function processMessage(event) {
       request.post(errorOptions, (err) => {
         console.error("[!] SENT ERROR");
       });
-    }else if(debt) {
+    }else if(debt && numRegex.test(message) && message.length < 13 && message.length >= 10 ) {
       console.log("\n[+] USER HAS DEBT!\n")
+
     } 
     else if (message.length > 15 && message.length < 21 && verifyRegex.test(message)) {
       const otpNum = message.split(/[, ]+/);
