@@ -23,7 +23,7 @@ module.exports = function processPostback(event) {
           type: "template",
           payload: {
             template_type: "button",
-            text: "Hi Sir, How can we assist you?",
+            text: "Hi, Good day to you!\nThank you for reaching Chiqu Lending Corp.\n\nFor urgent matters pls call 09603500960 (Smart) or 09772572758 (Globe). Thank you!",
             buttons: [
               {
                 type: "postback",
@@ -39,7 +39,7 @@ module.exports = function processPostback(event) {
                 type: "postback",
                 title: "Locations",
                 payload: "LOCATIONS_PAYLOAD",
-              },
+              }
             ],
           },
         },
@@ -141,7 +141,7 @@ module.exports = function processPostback(event) {
       }
       console.log("[+] REPAYMENT INFO SENT");
     });
-  }
+  } 
 
   if (payload === "GET_STARTED_PAYLOAD") {
     _menuFunc()
@@ -155,5 +155,8 @@ module.exports = function processPostback(event) {
   }
   if (payload === "REPAYMENT_INFO_PAYLOAD"){
     _repayment()
+  }
+  if (payload == "MENU"){
+    _menuFunc()
   }
 };

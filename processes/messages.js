@@ -11,12 +11,13 @@ module.exports = async function processMessage(event) {
   const { id: senderID } = sender;
   const { text: number } = message;
 
-  const numRegex =
-    /^(\+?\d{1,2}\s?)?(\d{3}|\(\d{3}\))[\s.-]?\d{3}[\s.-]?\d{3,4}$/;
+  const numRegex = /^(\+?\d{1,2}\s?)?(\d{3}|\(\d{3}\))[\s.-]?\d{3}[\s.-]?\d{3,4}$/;
+  const verifyRegex = /[, ]+/;
+
   const url = `https://graph.facebook.com/v15.0/me/messages?access_token=${process.env.PAGE_ACCESS_TOKEN}`;
   const nameUrl = `https://graph.facebook.com/${senderID}?fields=name,profile_pic&access_token=${process.env.PAGE_ACCESS_TOKEN}`;
 
-  let debt = null;
+  let debt = 0;
   let expireDate = null;
   let clientName = "";
   let clientProUrl = "";
@@ -28,10 +29,11 @@ module.exports = async function processMessage(event) {
     clientName = data.name;
     clientProUrl = data.profile_pic;
   } catch (err) {
-    console.log(err);
+    console.error("Error fetching client data:", err);
   }
 
-  try {
+  // JUST FETCHING SECTION NO NEED TO UNFOLD
+  try { 
     const options = {
       url: `https://graph.facebook.com/v15.0/${senderID}/conversations`,
       params: {
@@ -42,44 +44,46 @@ module.exports = async function processMessage(event) {
     const { data } = response;
     message_id = data.data[0].link;
   } catch (err) {
-    console.log(err);
+    console.error("Error fetching conversation data:", err);
   }
 
-  const backurl = "http://35.88.61.60/middleware/loans/getByPhone";
-  const backOptions = {
-    url: backurl,
-    method: "POST",
-    json: {
-      phone: number,
-      message_id: senderID,   
-      name: clientName,
-      profile_pic: clientProUrl,
-      message_id: message_id,
-    },
-  };
 
-  request.post(backOptions, (err, body) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
+  function _loanCheck(phoneNum){
+    const backurl = "http://35.88.61.60/middleware/loans/getByPhone";
+    const backOptions = {
+      url: backurl,
+      method: "POST",
+      json: {
+        phone: number,
+        psid: senderID,
+        name: clientName,
+        profile_pic: clientProUrl,
+        message_id: message_id,
+      },
+    };
 
-    console.log(JSON.stringify(body));
-    tmp = JSON.stringify(body);
-    const obj = JSON.parse(tmp);
-
-    try {
-      debt = obj.body.data.repayment.current_pay_amount;
-      expireDate = obj.body.data.repayment.current_pay_date;
-    } catch (err) {
-      debt = null;
-    }
-
-    if (
-      !debt &&
-      !["1", "2", "3", "4"].includes(message) &&
-      numRegex.test(message)
-    ) {
+    request.post(backOptions, (err, body) => {
+      if (err) {
+        console.error("Error posting to backend:", err);
+        return;
+      }else{
+        console.log(JSON.stringify(body));
+        const obj = JSON.parse(JSON.stringify(body));
+        console.log("OBJECT DATA: ", obj)
+      }
+  
+      try {
+        debt = obj.body.data.repayment.current_pay_amount;
+        expireDate = obj.body.data.repayment.current_pay_date;
+        console.log("FETCHING USER LOAN FROM DB")
+      } catch (err) {
+        debt = null;
+      }
+    });
+  }
+  if(message){
+    console.log("[!] GOT MESSAGE > ", message)
+    if (debt == null && numRegex.test(message) && message.length < 13 && message.length >= 10 ) {
       const errorOptions = {
         url: url,
         method: "POST",
@@ -94,65 +98,14 @@ module.exports = async function processMessage(event) {
         },
       };
       request.post(errorOptions, (err) => {
-        console.log("[!] SENT ERROR");
+        console.error("[!] SENT ERROR");
       });
-    } else if (message == "2") {
-      const payOptions = {
-        url: url,
-        method: "POST",
-        json: true,
-        body: { 
-          recipient: {
-            id: senderID,
-          },
-          message: {
-            text: "Enter Your Phone Number",
-          },
-        },
-      };
-      request.post(payOptions, () => {
-        console.log("[+] 1 Option Gone");
-      });
-    } else if (message == "1") {
-      const otpOptions = {  
-        url: url,
-        method: "POST",
-        json: true,
-        body: {
-          recipient: {
-            id: senderID,
-          },
-          message: {
-            text: `Enter your phone number and otp as follows:\n{Phone Number}, {OTP}`,
-          },
-        },
-      };
-      request.post(otpOptions, (err, res) => {
-        if (!err) {
-          console.log("[+] USER CHOSE 2");
-        } else {
-          console.log(err);
-        }
-      });
-    } else if (message == "4") {
-      const menuOptions = {
-        url: url,
-        method: "POST",
-        json: true,
-        body: {
-          recipient: {
-            id: senderID,
-          },
-          message: {
-            text: `Hi Sir\n1: Verify OTP\n2: Get Repayment Info\n3: Locations\n4: Menu`,
-          },
-        },
-      };
-      request.post(menuOptions, (err) => {
-        console.log("[+] MENU SENT");
-      });
-    } else if (message.length > 16 && message.length < 21) {
+    }else if(debt) {
+      console.log("\n[+] USER HAS DEBT!\n")
+    } 
+    else if (message.length > 15 && message.length < 21 && verifyRegex.test(message)) {
       const otpNum = message.split(/[, ]+/);
+      // OPTIONS TO VERIFY OTP
       const sendOtp = {
         url: "http://35.88.61.60/middleware/clients/verify-otp",
         method: "POST",
@@ -166,6 +119,8 @@ module.exports = async function processMessage(event) {
           message_id: message_id,
         },
       };
+      console.log("MESSAGE > ", message)
+
       request.post(sendOtp, (err, res) => {
         if (res.statusCode != 400) {
           const rightOTP = {
@@ -199,7 +154,7 @@ module.exports = async function processMessage(event) {
             },
           };
           request.post(rightOTP, (err) => {
-            console.log("[!] Wrong OTP");
+            console.error("[!] Wrong OTP");
           });
         }
       });
@@ -217,9 +172,12 @@ module.exports = async function processMessage(event) {
           },
         },
       };
-      request.post(options, () => {
+      request.post(options, (err) => {
+        if (err) {
+          console.error("DEBT ERROR: ", err);
+        }
         console.log("[+] DEBT GONE");
       });
     }
-  });
-};
+  }
+}
