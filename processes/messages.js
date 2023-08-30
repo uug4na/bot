@@ -78,32 +78,36 @@ module.exports = async function processMessage(event) {
       }
     });
   }
+  function _messageSender(msg){
+    const _opts = {
+      url: url,
+      method: "POST",
+      json: true,
+      body: {
+        recipient: {
+          id: senderID,
+        },
+        message: {
+          text: msg,
+        },
+      },
+    };
+    request.post(_opts, (err) => {
+      if(err){
+        console.log("ERROR", err)
+      }
+      console.error("[+] SENT MSG");
+    });
+  }
   if(message){
     console.log("[!] GOT MESSAGE > ", message)
     if (numRegex.test(message) && message.length < 13 && message.length >= 10 ) {
       if(_loanCheck(message)){
         console.log("USER HAS LOAN")
+        msg = "YOU HAVE LOAN"
+        _messageSender(msg)
       }
-      const errorOptions = {
-        url: url,
-        method: "POST",
-        json: true,
-        body: {
-          recipient: {
-            id: senderID,
-          },
-          message: {
-            text: `${message} Is Not Registered\nBut You Can Register, Our Loan Amounts: \n440PHP\n660PHP\n880PHP\n1100PHP\n1300PHP\n1700PHP`,
-          },
-        },
-      };
-      request.post(errorOptions, (err) => {
-        console.error("[!] SENT ERROR");
-      });
-    }else if(debt && numRegex.test(message) && message.length < 13 && message.length >= 10 ) {
-      console.log("\n[+] USER HAS DEBT!\n")
-
-    } 
+    }
     else if (message.length > 15 && message.length < 21 && verifyRegex.test(message)) {
       const otpNum = message.split(/[, ]+/);
       // OPTIONS TO VERIFY OTP
